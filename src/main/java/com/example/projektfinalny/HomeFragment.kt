@@ -16,34 +16,19 @@ import java.io.*
 
 class HomeFragment : Fragment() {
 
-    val FILE_NAME = "transactions.txt"
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val FILE_NAME = "transactions.txt"
-        // Checks if the transactions file already exists
-        val fileExists = context?.getFileStreamPath(FILE_NAME)?.exists() ?: false
+
         //
         // Inflate the layout for this fragment
         val view: View = inflater.inflate(R.layout.fragment_home, container, false)
         //TODO Create an add button function that saves transaction details to a file
         val addTransButton = view.findViewById<FloatingActionButton>(R.id.add_transaction_btn)
-        val textTv = view.findViewById<TextView>(R.id.testTV)
+//        val textTv = view.findViewById<TextView>(R.id.testTV)
         addTransButton.setOnClickListener {
 
-            val fileContents = if (fileExists) {"\nI jeszcze piwo!"}else{"Kup chleb!"}
-
-            context?.openFileOutput(FILE_NAME, Context.MODE_APPEND).use {
-                it?.write(fileContents.toByteArray())
-            }
-
-            val inputStream = context?.openFileInput(FILE_NAME)
-            val buffer = ByteArray(inputStream?.available() ?: 0)
-            inputStream?.read(buffer)
-            val fileText = String(buffer)
-            Toast.makeText(context, fileText, Toast.LENGTH_LONG).show()
-            textTv.text = fileText
 
             val dialog = MyDialogFragment()
             dialog.show(parentFragmentManager, "MyDialogFragment")
