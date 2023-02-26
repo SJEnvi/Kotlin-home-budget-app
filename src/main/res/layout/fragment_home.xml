@@ -57,10 +57,12 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
+                android:layout_margin="16dp"
                 android:layout_weight="1"
-                android:layout_margin="16dp">
+                android:background="#66FAB1B7"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -81,14 +83,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="300 zł"
+                    android:textColor="@color/red"
                     android:textSize="26dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.521"
                     app:layout_constraintStart_toEndOf="@+id/budget_amount"
                     app:layout_constraintTop_toBottomOf="@+id/balance"
-                    app:layout_constraintVertical_bias="0.0"
-                    android:textColor="@color/red" />
+                    app:layout_constraintVertical_bias="0.0" />
             </LinearLayout>
 
             <LinearLayout
@@ -102,8 +104,10 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="#66B3FAB1"
+                    android:gravity="center"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:padding="10dp">
 
                     <TextView
                         android:id="@+id/textView2"
@@ -125,7 +129,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="600 zł"
-                        android:textColor="#43A047"
+                        android:textColor="@color/balanceGreen"
                         android:textSize="26dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -137,15 +141,6 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/testTV"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Test"
-            android:gravity="center"
-            android:textSize="30dp"/>
-
     </LinearLayout>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_transaction_btn"

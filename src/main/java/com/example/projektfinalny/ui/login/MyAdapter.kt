@@ -23,7 +23,7 @@ class MyAdapter(private val transactionsList : ArrayList<Transaction>) :
         val currentItem = transactionsList[position]
         holder.tvtitle.text = currentItem.title
         holder.tvamount.text = currentItem.amount.toString()
-        holder.tvDate.text = currentItem.date
+        holder.tvDate.text = currentItem.category
 
     }
 

@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
+import com.example.projektfinalny.data.model.Transaction
 import java.io.File
 
 class MyDialogFragment : DialogFragment() {
@@ -30,7 +31,7 @@ class MyDialogFragment : DialogFragment() {
         layout.addView(title)
 
         val amount = EditText(activity)
-        amount.hint = "Enter amount"
+        amount.hint = "Enter amount (separate with dot)"
         layout.addView(amount)
 
         val category = EditText(activity)
@@ -53,13 +54,11 @@ class MyDialogFragment : DialogFragment() {
                 it?.write(fileContents.toByteArray())
             }
 
-            val inputStream = context?.openFileInput(FILE_NAME)
-            val buffer = ByteArray(inputStream?.available() ?: 0)
-            inputStream?.read(buffer)
-            val fileText = String(buffer)
-            Toast.makeText(context, fileText, Toast.LENGTH_LONG).show()
 
-        }
+            }
+
+
+
 
         // Set the negative button text and click listener
         builder.setNegativeButton("Cancel") { _, _ ->
