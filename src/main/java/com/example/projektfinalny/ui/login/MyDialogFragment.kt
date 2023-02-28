@@ -2,9 +2,8 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
 import com.example.projektfinalny.data.model.Transaction
@@ -13,6 +12,8 @@ import java.io.File
 class MyDialogFragment : DialogFragment() {
 
     val FILE_NAME = "transactions.txt"
+    val items = arrayOf("Jedzenie", "Rachunki", "Inne")
+    var selectedItem : String? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // Create a new AlertDialog.Builder object
@@ -34,11 +35,32 @@ class MyDialogFragment : DialogFragment() {
         amount.hint = "Enter amount (separate with dot)"
         layout.addView(amount)
 
-        val category = EditText(activity)
-        category.hint = "Select category"
+        val categoryText = TextView(activity)
+        categoryText.text = "Select category"
+        layout.addView(categoryText)
+
+        val category = Spinner(activity)
+        val adapter =
+            context?.let { ArrayAdapter(it, android.R.layout.simple_spinner_dropdown_item, items) }
+        category.adapter = adapter
         layout.addView(category)
 
         builder.setView(layout)
+
+        category.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedItem = parent.getItemAtPosition(position).toString()
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                selectedItem = "No category"
+            }
+        }
 
         // Set the positive button text and click listener
         builder.setPositiveButton("OK") { _, _ ->
@@ -46,7 +68,7 @@ class MyDialogFragment : DialogFragment() {
             // Checks if the transactions file already exists
             val fileExists = context?.getFileStreamPath(FILE_NAME)?.exists() ?: false
             var id = if (fileExists) {File(context?.filesDir, FILE_NAME).readLines().size+1}else{1}
-            val data = id.toString() + "," + title.text.toString()+"," + amount.text.toString() +","+ category.text.toString()
+            val data = id.toString() + "," + title.text.toString() + "," + amount.text.toString() + "," + selectedItem
             val fileContents = if (fileExists) {"\n$data"}else{data}
 
 

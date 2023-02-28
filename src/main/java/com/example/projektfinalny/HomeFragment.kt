@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import com.example.projektfinalny.data.model.Transaction
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.*
+import java.lang.Math.round
 
 class HomeFragment : Fragment() {
     val FILE_NAME = "transactions.txt"
@@ -40,9 +41,9 @@ class HomeFragment : Fragment() {
         }else{
             balance.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
         }
-        balance.text = b.sum().toString() + " zł"
-        expenses.text = b[0].toString() + " zł"
-        incomes.text = b[1].toString() + " zł"
+        balance.text = roundTo2Dec(b.sum()).toString() + " zł"
+        expenses.text = roundTo2Dec(b[0]).toString() + " zł"
+        incomes.text = roundTo2Dec(b[1]).toString() + " zł"
 
         return view
     }
@@ -79,4 +80,6 @@ class HomeFragment : Fragment() {
         }
         return listOf(minus, adds)
     }
+
+    private fun roundTo2Dec(number: Double) : Double{return (kotlin.math.round(number*100)/100)}
 }
