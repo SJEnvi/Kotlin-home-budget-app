@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.core.view.marginTop
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
 import com.example.projektfinalny.data.model.Transaction
@@ -12,7 +13,7 @@ import java.io.File
 class MyDialogFragment : DialogFragment() {
 
     val FILE_NAME = "transactions.txt"
-    val items = arrayOf("Jedzenie", "Rachunki", "Inne")
+    val items = arrayOf("Wpływy","Rachunki", "Rozrywka i wypoczynek", "Wydatki bierzące", "Zdrowie")
     var selectedItem : String? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -37,6 +38,7 @@ class MyDialogFragment : DialogFragment() {
 
         val categoryText = TextView(activity)
         categoryText.text = "Select category"
+        categoryText.setPadding(20)
         layout.addView(categoryText)
 
         val category = Spinner(activity)
@@ -55,6 +57,7 @@ class MyDialogFragment : DialogFragment() {
                 id: Long
             ) {
                 selectedItem = parent.getItemAtPosition(position).toString()
+
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -68,7 +71,8 @@ class MyDialogFragment : DialogFragment() {
             // Checks if the transactions file already exists
             val fileExists = context?.getFileStreamPath(FILE_NAME)?.exists() ?: false
             var id = if (fileExists) {File(context?.filesDir, FILE_NAME).readLines().size+1}else{1}
-            val data = id.toString() + "," + title.text.toString() + "," + amount.text.toString() + "," + selectedItem
+            val amountRounded = roundTo2Dec(amount.text.toString().toDouble()).toString()
+            val data = id.toString() + "," + title.text.toString() + "," + amountRounded + "," + selectedItem
             val fileContents = if (fileExists) {"\n$data"}else{data}
 
 
@@ -90,4 +94,7 @@ class MyDialogFragment : DialogFragment() {
         // Return the created dialog
         return builder.create()
     }
+
+    private fun roundTo2Dec(number: Double) : Double{return (kotlin.math.round(number*100)/100)}
+
 }
