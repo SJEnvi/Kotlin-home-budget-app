@@ -35,7 +35,11 @@ class HomeFragment : Fragment() {
             val dialog = MyDialogFragment()
             dialog.show(parentFragmentManager, "MyDialogFragment")
         }
-        var b = readBalance()
+        var b = listOf(0.0, 0.0)
+        try {
+            b = readBalance()
+        }catch (e: FileNotFoundException){ }
+
         if (b.sum() >= 0){
             balance.setTextColor(ContextCompat.getColor(requireContext(), R.color.balanceGreen))
         }else{

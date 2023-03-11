@@ -1,6 +1,8 @@
 package com.example.projektfinalny
 
+import android.content.Context
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,7 +12,7 @@ import java.io.*
 
 class MainActivity constructor() : AppCompatActivity() {
 
-//    var bottomNavigationView: BottomNavigationView = BottomNavigationView(this)
+    //    var bottomNavigationView: BottomNavigationView = BottomNavigationView(this)
     var homeFragment: HomeFragment = HomeFragment()
     var historyFragment: HistoryFragment = HistoryFragment()
     var analyzeFragment: AnalyzeFragment = AnalyzeFragment()

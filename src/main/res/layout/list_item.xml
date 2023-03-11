@@ -43,6 +43,18 @@
         android:textSize="16dp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/tvSavedDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:text="To jest próba"
+        android:textColor="@color/black"
+        android:textSize="16dp"
+        android:textStyle="bold" />
+
 
 </LinearLayout>
 

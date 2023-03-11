@@ -1,21 +1,28 @@
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.core.view.marginTop
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
 import com.example.projektfinalny.data.model.Transaction
 import java.io.File
+import java.time.LocalDate
+import java.util.*
 
 class MyDialogFragment : DialogFragment() {
 
     val FILE_NAME = "transactions.txt"
     val items = arrayOf("Wpływy","Rachunki", "Rozrywka i wypoczynek", "Wydatki bierzące", "Zdrowie")
     var selectedItem : String? = null
+    @RequiresApi(Build.VERSION_CODES.O)
+    val currentDate = LocalDate.now()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // Create a new AlertDialog.Builder object
         val builder = AlertDialog.Builder(activity)
@@ -72,7 +79,7 @@ class MyDialogFragment : DialogFragment() {
             val fileExists = context?.getFileStreamPath(FILE_NAME)?.exists() ?: false
             var id = if (fileExists) {File(context?.filesDir, FILE_NAME).readLines().size+1}else{1}
             val amountRounded = roundTo2Dec(amount.text.toString().toDouble()).toString()
-            val data = id.toString() + "," + title.text.toString() + "," + amountRounded + "," + selectedItem
+            val data = id.toString()+","+title.text.toString()+","+amountRounded+","+selectedItem +","+currentDate
             val fileContents = if (fileExists) {"\n$data"}else{data}
 
 

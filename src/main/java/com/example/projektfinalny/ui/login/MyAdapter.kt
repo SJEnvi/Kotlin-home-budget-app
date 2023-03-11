@@ -24,6 +24,7 @@ class MyAdapter(private val transactionsList : ArrayList<Transaction>) :
         holder.tvtitle.text = currentItem.title
         holder.tvamount.text = currentItem.amount.toString()
         holder.tvDate.text = currentItem.category
+//        holder.tvActualDate.text = currentItem.date.toString()
 
     }
 
@@ -37,5 +38,6 @@ class MyAdapter(private val transactionsList : ArrayList<Transaction>) :
         val tvtitle : TextView = itemView.findViewById(R.id.tvTitle)
         val tvamount : TextView = itemView.findViewById(R.id.tvAmount)
         val tvDate : TextView = itemView.findViewById(R.id.tvDate)
+//        val tvActualDate : TextView = itemView.findViewById(R.id.tvSavedDate)
     }
 }
