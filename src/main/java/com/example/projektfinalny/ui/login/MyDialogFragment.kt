@@ -17,7 +17,7 @@ import java.util.*
 class MyDialogFragment : DialogFragment() {
 
     val FILE_NAME = "transactions.txt"
-    val items = arrayOf("Wpływy","Rachunki", "Rozrywka i wypoczynek", "Wydatki bierzące", "Zdrowie")
+    val items = arrayOf("Wplywy","Rachunki", "Rozrywka i wypoczynek", "Wydatki bierzace", "Zdrowie")
     var selectedItem : String? = null
     @RequiresApi(Build.VERSION_CODES.O)
     val currentDate = LocalDate.now()
