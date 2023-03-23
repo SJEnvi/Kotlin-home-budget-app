@@ -1,9 +1,6 @@
 package com.example.projektfinalny
 
 import MyDialogFragment
-import android.app.Activity
-import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -12,10 +9,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.example.projektfinalny.data.model.Transaction
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.*
-import java.lang.Math.round
 
 class HomeFragment : Fragment() {
     val FILE_NAME = "transactions.txt"

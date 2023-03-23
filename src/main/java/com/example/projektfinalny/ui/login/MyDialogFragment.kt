@@ -9,7 +9,17 @@ import androidx.annotation.RequiresApi
 import androidx.core.view.marginTop
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
+import com.example.projektfinalny.GoogleAuth
 import com.example.projektfinalny.data.model.Transaction
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import io.grpc.InternalChannelz.id
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
 import java.util.*
@@ -21,6 +31,11 @@ class MyDialogFragment : DialogFragment() {
     var selectedItem : String? = null
     @RequiresApi(Build.VERSION_CODES.O)
     val currentDate = LocalDate.now()
+
+    //firestore test
+    val db = Firebase.firestore
+
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -76,11 +91,26 @@ class MyDialogFragment : DialogFragment() {
         builder.setPositiveButton("OK") { _, _ ->
             // Get the input text and do something with it
             // Checks if the transactions file already exists
-            val fileExists = context?.getFileStreamPath(FILE_NAME)?.exists() ?: false
-            var id = if (fileExists) {File(context?.filesDir, FILE_NAME).readLines().size+1}else{1}
+            val fileExists = requireContext().getFileStreamPath(FILE_NAME)?.exists() ?: false
+            var id = if (fileExists) {File(requireContext().filesDir, FILE_NAME).readLines().size+1}else{1}
             val amountRounded = roundTo2Dec(amount.text.toString().toDouble()).toString()
             val data = id.toString()+","+title.text.toString()+","+amountRounded+","+selectedItem +","+currentDate
             val fileContents = if (fileExists) {"\n$data"}else{data}
+
+            val transaction = hashMapOf(
+                "title" to title.text.toString(),
+                "amount" to amountRounded,
+                "category" to selectedItem,
+                "date" to Timestamp.now()
+            )
+
+//            CoroutineScope(Dispatchers.IO).launch {
+                val loggedInUserId = FirebaseAuth.getInstance().currentUser.toString()
+                val mainCollection = db.collection("users")
+                val subDocument = mainCollection.document(loggedInUserId)
+                val subCollection = subDocument.collection("transactions")
+                    subCollection.add(transaction)
+//        }
 
 
             context?.openFileOutput(FILE_NAME, Context.MODE_APPEND).use {
