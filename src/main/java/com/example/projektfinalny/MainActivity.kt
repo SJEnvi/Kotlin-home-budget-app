@@ -1,12 +1,13 @@
 package com.example.projektfinalny
 
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
-
+import com.google.firebase.auth.FirebaseAuth
 
 
 class MainActivity constructor() : AppCompatActivity() {
@@ -16,18 +17,31 @@ class MainActivity constructor() : AppCompatActivity() {
     var historyFragment: HistoryFragment = HistoryFragment()
     var analyzeFragment: AnalyzeFragment = AnalyzeFragment()
     var settingsFragment: SettingsFragment = SettingsFragment()
+//    val REQUEST_CODE = 1
 
 
-    val RC_SIGN_IN = 20202
+    private val RC_SIGN_IN = 20202
+    private val REQUEST_CODE_REFRESH = 1
+
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+//            // Do something when the activity returns a result
+//        }
+//    }
 
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val intent = Intent(this, GoogleAuth::class.java)
-        startActivity(intent)
         setContentView(R.layout.activity_main)
+        // Start GoogleAuth activity
 
-        // ...
-// Initialize Firebase Auth
+        if (FirebaseAuth.getInstance().currentUser?.email==null){
+            val intent = Intent(this, GoogleAuth::class.java)
+            startActivity(intent)
+        }
+
+
 
 
 

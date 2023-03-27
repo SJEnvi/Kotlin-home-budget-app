@@ -10,6 +10,7 @@ import androidx.core.view.marginTop
 import androidx.core.view.setPadding
 import androidx.fragment.app.DialogFragment
 import com.example.projektfinalny.GoogleAuth
+import com.example.projektfinalny.R
 import com.example.projektfinalny.data.model.Transaction
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -27,7 +28,6 @@ import java.util.*
 class MyDialogFragment : DialogFragment() {
 
     val FILE_NAME = "transactions.txt"
-    val items = arrayOf("Wplywy","Rachunki", "Rozrywka i wypoczynek", "Wydatki bierzace", "Zdrowie")
     var selectedItem : String? = null
     @RequiresApi(Build.VERSION_CODES.O)
     val currentDate = LocalDate.now()
@@ -64,12 +64,12 @@ class MyDialogFragment : DialogFragment() {
         layout.addView(categoryText)
 
         val category = Spinner(activity)
-        val adapter =
-            context?.let { ArrayAdapter(it, android.R.layout.simple_spinner_dropdown_item, items) }
+        val adapter = ArrayAdapter.createFromResource(requireContext(), R.array.CategoryList, android.R.layout.simple_spinner_item)
         category.adapter = adapter
         layout.addView(category)
 
         builder.setView(layout)
+
 
         category.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -93,7 +93,7 @@ class MyDialogFragment : DialogFragment() {
             // Checks if the transactions file already exists
             val fileExists = requireContext().getFileStreamPath(FILE_NAME)?.exists() ?: false
             var id = if (fileExists) {File(requireContext().filesDir, FILE_NAME).readLines().size+1}else{1}
-            val amountRounded = roundTo2Dec(amount.text.toString().toDouble()).toString()
+            val amountRounded = roundTo2Dec(amount.text.toString().toDouble())
             val data = id.toString()+","+title.text.toString()+","+amountRounded+","+selectedItem +","+currentDate
             val fileContents = if (fileExists) {"\n$data"}else{data}
 
@@ -105,11 +105,12 @@ class MyDialogFragment : DialogFragment() {
             )
 
 //            CoroutineScope(Dispatchers.IO).launch {
-                val loggedInUserId = FirebaseAuth.getInstance().currentUser.toString()
-                val mainCollection = db.collection("users")
-                val subDocument = mainCollection.document(loggedInUserId)
-                val subCollection = subDocument.collection("transactions")
-                    subCollection.add(transaction)
+            val loggedInUser = FirebaseAuth.getInstance().currentUser?.email
+            val mainCollection = db.collection("users")
+            mainCollection.document(loggedInUser!!).collection("transactions").add(transaction)
+//            val subDocument = mainCollection
+//            val subCollection = subDocument.collection("transactions")
+//            subCollection.add(transaction)
 //        }
 
 

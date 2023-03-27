@@ -18,4 +18,12 @@
         <item>Last Month</item>
         <item>Last Week</item>
     </string-array>
+    <string-array name="CategoryList">
+        <item>Wszystkie</item>
+        <item>Wplywy</item>
+        <item>Rachunki</item>
+        <item>Rozrywka i wypoczynek</item>
+        <item>Wydatki bieżące</item>
+        <item>Zdrowie</item>
+    </string-array>
 </resources>

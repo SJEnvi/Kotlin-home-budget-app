@@ -97,6 +97,7 @@ class GoogleAuth : Activity() {
                     Toast.makeText(this, "Login Successful, welcome ${auth.currentUser}", Toast.LENGTH_LONG).show()
                     val user = auth.currentUser
                     updateUI(user)
+                    finish()
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
@@ -110,7 +111,6 @@ class GoogleAuth : Activity() {
     private fun signIn() {
         val signInIntent = googleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
-        finish()
     }
     // [END signin]
 

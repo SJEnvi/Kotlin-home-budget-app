@@ -1,18 +1,30 @@
 package com.example.projektfinalny
 
+import android.annotation.SuppressLint
+import android.app.DownloadManager.Query
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager.BadTokenException
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.projektfinalny.data.model.LoggedInUser
 import com.example.projektfinalny.ui.login.MyAdapter
 import com.example.projektfinalny.data.model.Transaction
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.snapshots
+import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -20,40 +32,61 @@ import java.util.Date
 class HistoryFragment : Fragment() {
     //declaring variables I will use later on - in onCreate
     lateinit var newRecyclerView: RecyclerView
-    val FILE_NAME = "transactions.txt"
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-    private val transactionsList : ArrayList<Transaction> = ArrayList(5)
-    var selectedItem: String? = null
+    private val transactionsList: ArrayList<Transaction> = ArrayList(1)
+    lateinit var selectedTime: String
+    lateinit var selectedCat: String
+    lateinit var db: FirebaseFirestore
+    lateinit var loggedInUser: String
+    lateinit var transactionsCollection: CollectionReference
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var view = inflater.inflate(R.layout.fragment_history, container, false)
+        val view = inflater.inflate(R.layout.fragment_history, container, false)
+
+        //Assigning button view to reference
+        val applyBtn = view.findViewById<Button>(R.id.applyFiltersBtn)
 
         //initializing spinner with time selection
-        val spinner = view.findViewById<Spinner>(R.id.timeSelectorSpinner)
-        val adapter = ArrayAdapter.createFromResource(requireContext(), R.array.timeList, android.R.layout.simple_spinner_item)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = adapter
+        val spinnerTime = view.findViewById<Spinner>(R.id.timeSelectorSpinner)
+        val adapterTime = ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.timeList,
+            android.R.layout.simple_spinner_item
+        )
+        adapterTime.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerTime.adapter = adapterTime
+
+        //initializing spinner with category selection
+        val spinnerCat = view.findViewById<Spinner>(R.id.catSelectorSpinner)
+        val adapterCat = ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.CategoryList,
+            android.R.layout.simple_spinner_item
+        )
+        adapterTime.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCat.adapter = adapterCat
 
         //initializing recycler view
-        newRecyclerView = view.findViewById<RecyclerView>(R.id.recyclerview)
-        newRecyclerView?.layoutManager = LinearLayoutManager(view?.context)
-        newRecyclerView?.setHasFixedSize(true)
+        newRecyclerView = view.findViewById(R.id.recyclerview)
+        newRecyclerView.layoutManager = LinearLayoutManager(view?.context)
+        newRecyclerView.setHasFixedSize(true)
 
 
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+        spinnerTime.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 // Get the selected item
-                selectedItem = parent.getItemAtPosition(position) as String
+                selectedTime = parent.getItemAtPosition(position) as String
 
                 // Check if the selected item is different from a previous selection
-                if (selectedItem != "Item 1") {
-                    // Do something when a different item is selected
-                    Toast.makeText(requireContext(), selectedItem, Toast.LENGTH_SHORT).show()
-                }
-                newRecyclerView.adapter = MyAdapter(getTransactionData(selectedItem))
+
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -61,64 +94,102 @@ class HistoryFragment : Fragment() {
             }
         }
 
-        //then populate it with data
-        newRecyclerView.adapter = MyAdapter(getTransactionData())
+
+        spinnerCat.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                // Get the selected item
+                selectedCat = parent.getItemAtPosition(position) as String
+
+                // Check if the selected item is different from a previous selection
+
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Do nothing when no item is selected
+            }
+        }
 
 
+        applyBtn.setOnClickListener {
+            transactionsList.clear()
+            newRecyclerView.adapter = MyAdapter(getTransactionData(selectedTime, selectedCat))
+        }
 
         return view
     }
 
-    //TODO Replace this function with the one that gets data from file
-    private fun getTransactionData(): ArrayList<Transaction>{
-        return getTransactionData("All")
-    }
 
-    private fun getTransactionData(timePeriod: String?): ArrayList<Transaction> {
+    private fun getTransactionData(timePeriod: String?, category: String?): ArrayList<Transaction> {
         //clearing the transactions list in case the user opens this fragment multiple times
-        transactionsList.clear()
+        db = Firebase.firestore
+        loggedInUser = FirebaseAuth.getInstance().currentUser?.email!!
+        transactionsCollection =
+            db.collection("users").document(loggedInUser!!).collection("transactions")
 
-        //reading data from the file
-        val inputStream = context?.openFileInput(FILE_NAME)
-        val buffer = ByteArray(inputStream?.available() ?: 0)
-        inputStream?.read(buffer)
-        //note it's saved as single string
-        val fileText = String(buffer)
-        // thus we first split into list of lines
-        var fileTextSeparated = fileText.split("\n")
-        addToTransactionList(fileTextSeparated, timePeriod)
+        var query = prepareQuery(timePeriod, category)
 
-        //then we take every line and create a Transaction object out of the data in it
-
+        addToTransactionList(query)
         return transactionsList
     }
-    private fun addToTransactionList(separatedData : List<String>, timePeriod: String?): ArrayList<Transaction> {
-        val calendar = Calendar.getInstance()
-        calendar.time = Date()
-        when (timePeriod){
-            "All" -> calendar.add(Calendar.YEAR, -20)
-            "Last Month" -> calendar.add(Calendar.MONTH, -1)
-            "Last Week" -> calendar.add(Calendar.WEEK_OF_YEAR, -1)
-        }
-        for (data in separatedData) {
-                try {
-                    var transactionData = data.split(",")
-                    val transactionDate = dateFormat.parse(transactionData[4])
-                    if (calendar.time < transactionDate) {
+
+
+        private fun addToTransactionList(query: com.google.firebase.firestore.Query) {
+            query.get()
+                .addOnSuccessListener { collection ->
+                    for (data in collection) {
+                        try {
+                            val timestamp = data.getTimestamp("date")!!
                             var transaction = Transaction(
-                            transactionData[0].toInt(),
-                            transactionData[1],
-                            transactionData[2].toDouble(),
-                            transactionData[3],
-                            transactionDate
-                        )
-                        transactionsList.add(transaction)
+                                data.id,
+                                data.getString("title")!!,
+                                data.getDouble("amount")!!,
+                                data.getString("category")!!,
+                                timestamp.toDate()
+                            )
+                            transactionsList.add(transaction)
+
+
+                            //lastly we add the object to list of Transactions
+                        }catch (e: Error){
+                            Toast.makeText(requireContext(), "failed to get firestore data: $e", Toast.LENGTH_LONG).show()
+                        }
                     }
-                    //lastly we add the object to list of Transactions
-                }catch (e: Error){ }
-            }
-            //finally send the data to recyclerview adapter
-        return transactionsList
+                    newRecyclerView.adapter?.notifyDataSetChanged()
+                }
 
     }
+
+    fun prepareQuery(timePeriod: String?, category: String?): com.google.firebase.firestore.Query{
+        val calendar = Calendar.getInstance()
+        val timestampNow = Timestamp(calendar.time)
+//        if (category!="All"){
+//            query = query.whereEqualTo("category", category)
+//        }
+
+        //applying time filters to the query
+        when (timePeriod) {
+            "Last Month" -> calendar.add(Calendar.MONTH, -1)
+            "Last Week" -> calendar.add(Calendar.DAY_OF_MONTH, -7)
+        }
+        val timestampFiler = Timestamp(calendar.time)
+
+        var query = when (timePeriod) {
+            "All" -> transactionsCollection.whereLessThanOrEqualTo("date", timestampNow)
+            else -> transactionsCollection.whereLessThanOrEqualTo("date", timestampNow)
+                .whereGreaterThanOrEqualTo("date", timestampFiler)
+//                .whereEqualTo("category", category)
+        }
+
+//        applying category filters
+        if (category!="Wszystkie") {
+            query = query.whereEqualTo("category", category!!)
+        }
+        return query
+    }
+
 }

@@ -63,6 +63,8 @@ class SettingsFragment : Fragment() {
 
             }
 
+        Toast.makeText(requireContext(), FirebaseAuth.getInstance().currentUser?.email.toString(), Toast.LENGTH_LONG).show()
+
         return view
     }
 
