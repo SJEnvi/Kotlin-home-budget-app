@@ -34,7 +34,7 @@ class GoogleAuth : Activity() {
         setContentView(R.layout.auth_layout)
 
         val loginButton = findViewById<SignInButton>(R.id.sign_in_button)
-        val status = findViewById<TextView>(R.id.status_of_login)
+//        val status = findViewById<TextView>(R.id.status_of_login)
 
         loginButton.setOnClickListener{
             signIn()

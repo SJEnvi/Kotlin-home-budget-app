@@ -154,5 +154,6 @@
         android:layout_margin="16dp"
         android:src="@drawable/transaction_add_draw"
         android:onClick="addTransaction"
+        android:backgroundTint="#4ea8de"
         />
 </LinearLayout>

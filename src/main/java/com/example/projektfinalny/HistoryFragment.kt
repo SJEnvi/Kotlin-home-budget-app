@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projektfinalny.data.model.LoggedInUser
@@ -38,6 +39,7 @@ class HistoryFragment : Fragment() {
     lateinit var db: FirebaseFirestore
     lateinit var loggedInUser: String
     lateinit var transactionsCollection: CollectionReference
+    lateinit var deletedTransaction : Transaction
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -66,7 +68,7 @@ class HistoryFragment : Fragment() {
             R.array.CategoryList,
             android.R.layout.simple_spinner_item
         )
-        adapterTime.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        adapterCat.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCat.adapter = adapterCat
 
         //initializing recycler view
@@ -117,8 +119,26 @@ class HistoryFragment : Fragment() {
 
         applyBtn.setOnClickListener {
             transactionsList.clear()
-            newRecyclerView.adapter = MyAdapter(getTransactionData(selectedTime, selectedCat))
+            newRecyclerView.adapter = MyAdapter(requireContext(), getTransactionData(selectedTime, selectedCat))
         }
+
+        val itemTouchHelper = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT){
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                deleteTransaction(transactionsList[viewHolder.adapterPosition])
+            }
+
+        }
+
+        val swipeHelper = ItemTouchHelper(itemTouchHelper)
+        swipeHelper.attachToRecyclerView(newRecyclerView)
 
         return view
     }
@@ -190,6 +210,11 @@ class HistoryFragment : Fragment() {
             query = query.whereEqualTo("category", category!!)
         }
         return query
+    }
+
+    fun deleteTransaction(transaction: Transaction){
+        deletedTransaction = transaction
+        transactionsCollection.document(transaction.id).delete()
     }
 
 }

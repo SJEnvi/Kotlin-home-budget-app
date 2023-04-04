@@ -1,17 +1,20 @@
 package com.example.projektfinalny
 
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
@@ -24,6 +27,8 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.sql.DataSource
 
 class SettingsFragment : Fragment() {
@@ -36,105 +41,82 @@ class SettingsFragment : Fragment() {
         //First we need to inflate view
         val view = inflater.inflate(R.layout.fragment_settings, container, false)
 
-        //Then we can use that view for other actions
-        val deleteBtn = view.findViewById<Button>(R.id.deleteBtn)
-        val dummyBtn = view.findViewById<Button>(R.id.addDummy)
-        val buttonSQL = view.findViewById<Button>(R.id.buttonSQL)
-        val testText = view.findViewById<TextView>(R.id.testTv)
+        val startDate = view.findViewById<Button>(R.id.startDate)
+        val numberOfMonths = view.findViewById<EditText>(R.id.numberOfMonths)
+        val amountEveryMonth = view.findViewById<EditText>(R.id.amountEveryMonth)
+        val confirmButton = view.findViewById<Button>(R.id.confirm_button)
+
+        startDate.setOnClickListener { clickDate(startDate) }
 
 
 
-        //assign functions to buttons
-        deleteBtn?.setOnClickListener { deleteAllTransactions() }
-        dummyBtn?.setOnClickListener { prepareDummyTransactionsFile() }
-        buttonSQL?.setOnClickListener {
-            var signInRequest = BeginSignInRequest.builder()
-                .setGoogleIdTokenRequestOptions(
-                    BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                        .setSupported(true)
-                        // Your server's client ID, not your Android client ID.
-                        .setServerClientId(getString(R.string.default_web_client_id))
-                        // Only show accounts previously used to sign in.
-                        .setFilterByAuthorizedAccounts(true)
-                        .build()
-                )
-                .build()
+        confirmButton.setOnClickListener {
+            val startDt = Date(startDate.text.toString())
+            val numMonths = numberOfMonths.text.toString().toInt()
+            val amount = amountEveryMonth.text.toString().toDouble()
+            sendDataToFirestore(startDt, numMonths, amount)
+            numberOfMonths.text.clear()
+            amountEveryMonth.text.clear()
+            startDate.text = "Kliknij by ustawić datę"
+
+        }
 
 
-            }
 
-        Toast.makeText(requireContext(), FirebaseAuth.getInstance().currentUser?.email.toString(), Toast.LENGTH_LONG).show()
 
         return view
     }
 
-    private fun deleteAllTransactions() {
-        val file = File(requireContext().filesDir, "transactions.txt")
-        if (file.exists()) {
-            file.delete()
-            Toast.makeText(requireContext(), "File deleted", Toast.LENGTH_LONG).show()
-        } else {
-            Toast.makeText(requireContext(), "File does not exist", Toast.LENGTH_LONG).show()
+    private fun sendDataToFirestore(startDt: Date, numMonths: Int, amount: Double) {
+        val db = Firebase.firestore
+        val loggedInUser = FirebaseAuth.getInstance().currentUser?.email
+        val date = Calendar.getInstance()
+        date.time = startDt
+        val mainCollection = db.collection("users").document(loggedInUser!!)
+            .collection("transactions")
+
+        for (i in 1..numMonths){
+
+
+            val transaction = hashMapOf(
+                "title" to "Stały zarobek",
+                "amount" to amount,
+                "category" to "Wplywy",
+                "date" to Timestamp(date.time)
+            )
+            date.add(Calendar.MONTH, 1)
+            mainCollection.document("MonthlyTransaction$i").set(transaction)
         }
+        Toast.makeText(requireContext(), "Pomyślnie dodano zarobek do bazy danych", Toast.LENGTH_LONG).show()
+
     }
 
-    private fun prepareDummyTransactionsFile() {
-        val dummyList = """1,Test1,10.0,Rachunki,2005-07-03
-            |2,Test2,20.0,Rachunki,2023-02-20
-            |3,Test3,30.0,Rachunki,2023-03-09
-        """.trimMargin()
-        requireContext().openFileOutput("transactions.txt", Context.MODE_PRIVATE).use {
-            it.write(dummyList.toByteArray())
-        }
+    private fun clickDate(view: Button){
+
+        val myCalendar = Calendar.getInstance()
+        val year = myCalendar.get(Calendar.YEAR)
+        val month = myCalendar.get(Calendar.MONTH)
+        val day = myCalendar.get(Calendar.DAY_OF_MONTH)
+
+        val dpd = DatePickerDialog(requireContext(),
+            DatePickerDialog.OnDateSetListener{ _, selectedYear, selectedMonth, selectedDayOfMonth ->
+
+                val selectedDate = "$selectedDayOfMonth/${selectedMonth+1}/$selectedYear"
+
+                Toast.makeText(requireContext(), selectedDate, Toast.LENGTH_LONG).show()
+
+                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
+                val dateParsed = sdf.parse(selectedDate)
+                view.text = Timestamp(dateParsed!!).toDate().toString()
+            },
+            year,
+            month,
+            day
+        )
+        dpd.show()
+
+
     }
+
 }
 
-//            CoroutineScope(Dispatchers.IO).launch {
-//                val connector = Hikari()
-//                val connection = connector.conclass()
-//                if(connector!=null){
-//                    val sqlStatement = "Select * from emails"
-//                    var smt: Statement=connection.createStatement()
-//                    var set= smt.executeQuery(sqlStatement)
-//                    while (set.next()){
-//                        Toast.makeText(requireContext(), set.getString(1), Toast.LENGTH_SHORT).show()
-//                    }
-//                    connection.close()
-//                }
-//                val pool: DataSource = connection.createConnectionPool()L/application_default_credentials.json")
-//                    pool.getConnection().use { conn ->
-//
-//                try {
-//                    val path = System.getProperty("user.dir")
-//                    System.setProperty("GOOGLE_APPLICATION_CREDENTIALS", "$path/SQ
-//                        val statement = "SELECT * FROM emails"
-//                        val stmt: PreparedStatement = conn.prepareStatement(statement)
-//                        val rs: ResultSet = stmt.executeQuery()
-//                        while (rs.next()) {
-//                            val email: String = rs.getString("email")
-//                            System.out.printf("email: %s\n", email)
-//                        }
-//                    }
-//                } catch (ex: SQLException) {
-//                    System.err.println("SQLException: ")
-//                }
-
-//                val sqlConnection = SqlConnection()
-//                val conn = sqlConnection.connect()
-//
-//// Use the connection here
-//                val statement = conn.createStatement()
-//                val resultSet = statement.executeQuery("SELECT * FROM emails")
-//
-//                while (resultSet.next()) {
-//                    val columnValue = resultSet.getString("email")
-//                    Toast.makeText(requireContext(), columnValue, Toast.LENGTH_SHORT).show()
-//                }
-////      It's important to close the below to avoid resource leaks
-//                resultSet.close()
-//                statement.close()
-//                conn.close()
-//            }
-
-
-//and finally return the view

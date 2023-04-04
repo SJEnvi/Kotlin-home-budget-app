@@ -1,26 +1,22 @@
 package com.example.projektfinalny
 
-import MyDialogFragment
+import com.example.projektfinalny.ui.login.AddTransactionDialog
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.example.projektfinalny.data.model.Transaction
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.*
+import java.util.Calendar
 
 class HomeFragment : Fragment() {
     val FILE_NAME = "transactions.txt"
@@ -44,12 +40,13 @@ class HomeFragment : Fragment() {
         try {
             plus = 0.0
             minus = 0.0
+            val date = Timestamp(Calendar.getInstance().time)
             val loggedInUser = FirebaseAuth.getInstance().currentUser?.email!!
             var db = Firebase.firestore
             var collectionRef =
                 db.collection("users").document(loggedInUser!!).collection("transactions")
             //getting all documents with transactions
-            collectionRef.get()
+            collectionRef.whereLessThanOrEqualTo("date", date).get()
                 .addOnSuccessListener { collection ->
                     for (data in collection) {
                         try {
@@ -90,10 +87,10 @@ class HomeFragment : Fragment() {
         }catch (e: NullPointerException) {
             Toast.makeText(requireContext(), "error: $e", Toast.LENGTH_LONG).show()
         }
-        //Created on click listener that will open "MyDialogFragment" if button is clicked
+        //Created on click listener that will open "com.example.projektfinalny.ui.login.AddTransactionDialog" if button is clicked
         addTransButton.setOnClickListener {
-            val dialog = MyDialogFragment()
-            dialog.show(parentFragmentManager, "MyDialogFragment")
+            val dialog = AddTransactionDialog()
+            dialog.show(parentFragmentManager, "com.example.projektfinalny.ui.login.AddTransactionDialog")
         }
 
 //        onActivityResult(1, 1, intent){
